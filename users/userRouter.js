@@ -4,10 +4,43 @@ const db = require('./userDb');
 const router = express.Router();
 
 router.post('/', (req, res) => {
-
+    const name = req.body;
+    console.log(name);
+    if (!name) {
+        res.status(400).json({ error: 'Please provide a name within the body of your request' });
+    } else {
+        db.insert(name)
+            .then(suc => {
+                res.status(201).json(suc);
+            })
+            .catch(() => {
+                res.status(500).json({ error: 'Internal server error' });
+            })
+    };
 });
 
 router.post('/:id/posts', (req, res) => {
+    const { id } = req.params;
+    const text = req.body;
+    console.log(id)
+
+    // if (!text) {
+    //     res.status(400).json({ error: 'Please provide text within the body of your request' });
+    // } else {
+    //     db.getById(id)
+    //         .then(target => {
+    //             target.insert(text)
+    //                 .then(suc => {
+    //                     res.status(201).json(suc);
+    //                 })
+    //                 .catch(() => {
+    //                     req.status(500).json({ error: 'Internal server error' })
+    //                 })
+    //         })
+    //         .catch(() => {
+    //             res.status(500).json({ error: 'Internal server error' });
+    //         });
+    // };
 
 });
 
@@ -52,7 +85,14 @@ router.get('/:id/posts', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-
+    const { id } = req.params;
+    db.remove(id)
+        .then(del => {
+            res.status(200).send(`User with ID: ${id} was deleted along with all ${del} of their resources`);
+        })
+        .catch(() => {
+            res.status(500).json({ error: 'Internal server error' });
+        });
 });
 
 router.put('/:id', (req, res) => {

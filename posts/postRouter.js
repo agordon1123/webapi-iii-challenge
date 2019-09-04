@@ -29,7 +29,14 @@ router.get('/:id', (req, res) => {
 });
 
 router.delete('/:id', (req, res) => {
-
+    const { id } = req.params;
+    db.remove(id)
+        .then(suc => {
+            res.status(200).send(`You have successfully removed ${suc} post with the ID: ${id}`)
+        })
+        .catch(() => {
+            res.status(500).json({ error: 'Internal server error' })
+        })
 });
 
 router.put('/:id', (req, res) => {
@@ -39,7 +46,10 @@ router.put('/:id', (req, res) => {
 // custom middleware
 
 function validatePostId(req, res, next) {
-
+    let id = req.params.id;
+    console.log(id);
+  
+    next();
 };
 
 module.exports = router;
