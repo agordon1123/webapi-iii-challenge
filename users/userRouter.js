@@ -1,51 +1,41 @@
 const express = require('express');
-const db = require('./userDb');
+const usersdb = require('./userDb');
+const postsdb = require('../posts/postDb');
 
 const router = express.Router();
 
 router.post('/', validateUser, (req, res) => {
     const name = req.body;
-    // console.log(name);
-    // if (!name) {
-    //     res.status(400).json({ error: 'Please provide a name within the body of your request' });
-    // } else {
-        db.insert(name)
-            .then(suc => {
-                res.status(201).json(suc);
-            })
-            .catch(() => {
-                res.status(500).json({ error: 'Internal server error' });
-            })
-    // };
+    console.log(name);
+
+    usersdb.insert(name)
+        .then(suc => {
+            res.status(201).json(suc);
+        })
+        .catch(() => {
+            res.status(500).json({ error: 'Internal server error' });
+        })
 });
 
 router.post('/:id/posts', (req, res) => {
     const { id } = req.params;
-    const text = req.body;
-    console.log(id)
+    const post = req.body;
 
-    // if (!text) {
-    //     res.status(400).json({ error: 'Please provide text within the body of your request' });
-    // } else {
-    //     db.getById(id)
-    //         .then(target => {
-    //             target.insert(text)
-    //                 .then(suc => {
-    //                     res.status(201).json(suc);
-    //                 })
-    //                 .catch(() => {
-    //                     req.status(500).json({ error: 'Internal server error' })
-    //                 })
-    //         })
-    //         .catch(() => {
-    //             res.status(500).json({ error: 'Internal server error' });
-    //         });
-    // };
-
+    if (!post.text || !post.user_id) {
+        res.status(400).json({ error: 'Please provide text within the body of your request' });
+    } else {
+        postsdb.insert(post)
+            .then(suc => {
+                res.status(201).send(suc);
+            })
+            .catch(() => {
+                res.status(500).json({ error: 'Internal server error' });
+            })
+    };
 });
 
 router.get('/', (req, res) => {
-    db.get()
+    usersdb.get()
         .then(users => {
             res.status(200).json(users);
         })
@@ -56,7 +46,7 @@ router.get('/', (req, res) => {
 
 router.get('/:id', (req, res) => {
     const { id } = req.params;
-    db.getById(id)
+    usersdb.getById(id)
         .then(user => {
             if (user) {
                 res.status(200).json(user);
@@ -71,7 +61,7 @@ router.get('/:id', (req, res) => {
 
 router.get('/:id/posts', (req, res) => {
     const { id } = req.params;
-    db.getUserPosts(id)
+    usersdb.getUserPosts(id)
         .then(posts => {
             if (posts) {
                 res.status(200).json(posts);
@@ -86,7 +76,7 @@ router.get('/:id/posts', (req, res) => {
 
 router.delete('/:id', (req, res) => {
     const { id } = req.params;
-    db.remove(id)
+    usersdb.remove(id)
         .then(del => {
             res.status(200).send(`User with ID: ${id} was deleted along with all ${del} of their resources`);
         })
@@ -111,13 +101,12 @@ function validateUser(req, res, next) {
     if (!name) {
         res.status(400).json({ error: 'Please provide a name within the body of your request' });
     } else {
-        res.status(400).json({ error: 'Please provide a name within the body of your request' });
         next();
     }
 };
 
 function validatePost(req, res, next) {
-
+    
 };
 
 module.exports = router;
