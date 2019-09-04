@@ -3,12 +3,12 @@ const db = require('./userDb');
 
 const router = express.Router();
 
-router.post('/', (req, res) => {
+router.post('/', validateUser, (req, res) => {
     const name = req.body;
-    console.log(name);
-    if (!name) {
-        res.status(400).json({ error: 'Please provide a name within the body of your request' });
-    } else {
+    // console.log(name);
+    // if (!name) {
+    //     res.status(400).json({ error: 'Please provide a name within the body of your request' });
+    // } else {
         db.insert(name)
             .then(suc => {
                 res.status(201).json(suc);
@@ -16,7 +16,7 @@ router.post('/', (req, res) => {
             .catch(() => {
                 res.status(500).json({ error: 'Internal server error' });
             })
-    };
+    // };
 });
 
 router.post('/:id/posts', (req, res) => {
@@ -56,7 +56,7 @@ router.get('/', (req, res) => {
 
 router.get('/:id', (req, res) => {
     const { id } = req.params;
-    db.getById(id) 
+    db.getById(id)
         .then(user => {
             if (user) {
                 res.status(200).json(user);
@@ -102,11 +102,18 @@ router.put('/:id', (req, res) => {
 //custom middleware
 
 function validateUserId(req, res, next) {
-
+    
+    next();
 };
 
 function validateUser(req, res, next) {
-
+    const name = req.body;
+    if (!name) {
+        res.status(400).json({ error: 'Please provide a name within the body of your request' });
+    } else {
+        res.status(400).json({ error: 'Please provide a name within the body of your request' });
+        next();
+    }
 };
 
 function validatePost(req, res, next) {
