@@ -16,21 +16,18 @@ router.post('/', validateUser, (req, res) => {
         })
 });
 
-router.post('/:id/posts', (req, res) => {
+router.post('/:id/posts', validateUserId, validatePost, (req, res) => {
     const { id } = req.params;
     const post = req.body;
 
-    if (!post.text || !post.user_id) {
-        res.status(400).json({ error: 'Please provide text within the body of your request' });
-    } else {
-        postsdb.insert(post)
-            .then(suc => {
-                res.status(201).send(suc);
-            })
-            .catch(() => {
-                res.status(500).json({ error: 'Internal server error' });
-            })
-    };
+    postsdb.insert(post)
+        .then(suc => {
+            res.status(201).send(suc);
+        })
+        .catch(() => {
+            res.status(500).json({ error: 'Internal server error' });
+        })
+
 });
 
 router.get('/', (req, res) => {
@@ -43,19 +40,15 @@ router.get('/', (req, res) => {
         });
 });
 
-router.get('/:id', (req, res) => {
+router.get('/:id', validateUserId, (req, res) => {
     const { id } = req.params;
     usersdb.getById(id)
         .then(user => {
-            if (user) {
-                res.status(200).json(user);
-            } else {
-                res.status(404).json({ error: 'The user with the desired ID does not exist' });
-            }
+            res.status(200).json(user);
         })
         .catch(() => {
-            res.status(500).json({ error: 'Internal server error' });
-        });
+            res.status(500).json({ error: 'Internal server error' })
+        })
 });
 
 router.get('/:id/posts', (req, res) => {
@@ -110,8 +103,22 @@ router.put('/:id', (req, res) => {
 //custom middleware
 
 function validateUserId(req, res, next) {
-    
-    next();
+    const { id } = req.params;
+    if (id) {
+        usersdb.getById(id)
+        .then(user => {
+            if (user) {
+                next();
+            } else {
+                res.status(404).json({ error: 'The user with the desired ID does not exist' });
+            }
+        })
+        .catch(() => {
+            res.status(500).json({ error: 'Internal server error' });
+        });
+    } else {
+        next();
+    }
 };
 
 function validateUser(req, res, next) {
@@ -124,7 +131,13 @@ function validateUser(req, res, next) {
 };
 
 function validatePost(req, res, next) {
+    const post = req.body;
 
+    if (!post.text || !post.user_id) {
+        res.status(400).json({ error: 'Please provide text within the body of your request' });
+    } else {
+        next();
+    };
 };
 
 module.exports = router;
