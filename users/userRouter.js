@@ -6,7 +6,6 @@ const router = express.Router();
 
 router.post('/', validateUser, (req, res) => {
     const name = req.body;
-    console.log(name);
 
     usersdb.insert(name)
         .then(suc => {
@@ -86,6 +85,25 @@ router.delete('/:id', (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
+    const { id } = req.params;
+    const userObj = req.body;
+
+    if (!userObj.name) {
+        res.status(400).json({ error: 'Please include a name with your request' })
+    } else {
+        usersdb.update(id, userObj)
+            .then(suc => {
+                if(suc ===1) {
+                    res.status(201).json(suc)
+                } else {
+                    res.status(500).json({ error: 'Internal server error' })
+                }
+            })
+            .catch(() => {
+                res.status(500).json({ error: 'Internal server error' })
+            })
+    }
+
 
 });
 
@@ -106,7 +124,7 @@ function validateUser(req, res, next) {
 };
 
 function validatePost(req, res, next) {
-    
+
 };
 
 module.exports = router;

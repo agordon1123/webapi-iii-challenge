@@ -40,6 +40,24 @@ router.delete('/:id', (req, res) => {
 });
 
 router.put('/:id', (req, res) => {
+    const { id } = req.params;
+    const postObj = req.body;
+
+    if (!postObj.text || !postObj.user_id) {
+        res.status(400).json({ error: 'Please include some text with your request' })
+    } else {
+        db.update(id, postObj)
+            .then(suc => {
+                if (suc === 1) {
+                    res.status(201).json(suc)
+                } else {
+                    res.status(500).json({ error: 'Internal server error' })
+                }
+            })
+            .catch(() => {
+                res.status(500).json({ error: 'Internal server error' })
+            })
+    }
 
 });
 
